@@ -1,0 +1,58 @@
+# Configuración del simulador KEPServerEX (OPC-UA).
+# Los NodeIds siguen la convención de KEPServerEX:  ns=2;s=<Canal>.<Dispositivo>[.<Grupo>].<Tag>
+#
+# Tipos soportados: Boolean, Int16, Int32, Int64, UInt16, UInt32, Float, Double, String
+# Simulaciones (sim.kind):
+#   sine         min, max, period_s           onda senoidal
+#   ramp         min, max, step               rampa que vuelve a min al llegar a max
+#   random       min, max                     valor aleatorio uniforme en cada ciclo
+#   random_walk  min, max, step, start        deriva aleatoria acotada
+#   counter      step, start                  contador incremental (piezas, ciclos...)
+#   toggle       period_s                     booleano que alterna cada period_s
+#   cycle        values, period_s             recorre una lista de valores
+#   threshold    source, above                true si el tag <source> (mismo dispositivo) > above
+#   static       value                        valor fijo (útil con writable: true)
+# Opcionales por tag: noise (ruido gaussiano, desviación), writable (el cliente puede escribir).
+
+server:
+  endpoint: opc.tcp://0.0.0.0:49320
+  name: KEPServerEX Simulator
+  namespace_uri: KEPServerEX
+  update_interval_ms: 1000
+
+channels:
+  # Réplica del proyecto de ejemplo que trae KEPServerEX por defecto
+  - name: Simulation Examples
+    devices:
+      - name: Functions
+        tags:
+          - { name: Ramp1,   type: Int32,  sim: { kind: ramp, min: 0, max: 100, step: 1 } }
+          - { name: Sine1,   type: Float,  sim: { kind: sine, min: -40, max: 40, period_s: 60 } }
+          - { name: Random1, type: Int32,  sim: { kind: random, min: 0, max: 1000 } }
+          - { name: User1,   type: String, sim: { kind: cycle, values: [Hello, World, KEPServerEX], period_s: 5 } }
+
+  # Línea de producción simulada
+  - name: Line1
+    devices:
+      - name: PLC1
+        tags:
+          - { name: Temperature,     type: Double,  sim: { kind: sine, min: 60, max: 85, period_s: 120 }, noise: 0.3 }
+          - { name: Pressure,        type: Double,  sim: { kind: random_walk, min: 1.0, max: 6.0, step: 0.05, start: 3.5 } }
+          - { name: MotorSpeed,      type: Float,   sim: { kind: random_walk, min: 1400, max: 1500, step: 5, start: 1450 } }
+          - { name: Running,         type: Boolean, sim: { kind: toggle, period_s: 90 } }
+          - { name: ProductionCount, type: UInt32,  sim: { kind: counter, step: 1, start: 0 } }
+          - { name: HighTempAlarm,   type: Boolean, sim: { kind: threshold, source: Temperature, above: 82 } }
+          - { name: TempSetpoint,    type: Double,  sim: { kind: static, value: 75.0 }, writable: true }
+        groups:
+          - name: Energy
+            tags:
+              - { name: Power_kW,  type: Double, sim: { kind: random_walk, min: 20, max: 45, step: 0.5, start: 30 } }
+              - { name: Voltage_V, type: Double, sim: { kind: sine, min: 395, max: 405, period_s: 30 }, noise: 0.5 }
+              - { name: Energy_kWh, type: Double, sim: { kind: counter, step: 0.01, start: 1000 } }
+
+      - name: Tank1
+        tags:
+          - { name: Level_pct,   type: Float,   sim: { kind: sine, min: 10, max: 95, period_s: 300 }, noise: 0.2 }
+          - { name: InletValve,  type: Boolean, sim: { kind: toggle, period_s: 20 } }
+          - { name: OutletValve, type: Boolean, sim: { kind: toggle, period_s: 35 } }
+          - { name: Status,      type: String,  sim: { kind: cycle, values: [FILLING, IDLE, DRAINING, IDLE], period_s: 15 } }

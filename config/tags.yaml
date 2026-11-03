@@ -1,0 +1,24 @@
+# Tags que consume opc-ua-consumer, con la ruta de KEPServerEX: Canal.Dispositivo[.Grupo].Tag
+# (el NodeId será ns=<índice de --namespace>;s=<ruta>).
+# Se lee solo al arrancar: tras editarlo hay que reiniciar el consumidor.
+tags:
+  - Simulation Examples.Functions.Ramp1
+  - Simulation Examples.Functions.Sine1
+  - Simulation Examples.Functions.Random1
+  - Simulation Examples.Functions.User1
+
+  - Line1.PLC1.Temperature
+  - Line1.PLC1.Pressure
+  - Line1.PLC1.MotorSpeed
+  - Line1.PLC1.Running
+  - Line1.PLC1.ProductionCount
+  - Line1.PLC1.HighTempAlarm
+  - Line1.PLC1.TempSetpoint
+  - Line1.PLC1.Energy.Power_kW
+  - Line1.PLC1.Energy.Voltage_V
+  - Line1.PLC1.Energy.Energy_kWh
+
+  - Line1.Tank1.Level_pct
+  - Line1.Tank1.InletValve
+  - Line1.Tank1.OutletValve
+  - Line1.Tank1.Status
